@@ -293,3 +293,47 @@ TEST(correctness, erase_end)
         EXPECT_EQ(23, c[4]);
     });
 }
+
+TEST(correctness, reserve)
+{
+    faulty_run([]
+    {
+        container c;
+        c.reserve(10);
+        c.push_back(4);
+        c.push_back(8);
+        c.push_back(15);
+        c.push_back(16);
+        c.push_back(23);
+        c.push_back(42);
+
+        EXPECT_EQ(4, c[0]);
+        EXPECT_EQ(8, c[1]);
+        EXPECT_EQ(15, c[2]);
+        EXPECT_EQ(16, c[3]);
+        EXPECT_EQ(23, c[4]);
+        EXPECT_EQ(42, c[5]);
+    });
+}
+
+TEST(correctness, reserve_2)
+{
+    faulty_run([]
+    {
+        container c;
+        c.push_back(4);
+        c.push_back(8);
+        c.push_back(15);
+        c.push_back(16);
+        c.push_back(23);
+        c.push_back(42);
+        c.reserve(100);
+
+        EXPECT_EQ(4, c[0]);
+        EXPECT_EQ(8, c[1]);
+        EXPECT_EQ(15, c[2]);
+        EXPECT_EQ(16, c[3]);
+        EXPECT_EQ(23, c[4]);
+        EXPECT_EQ(42, c[5]);
+    });
+}
