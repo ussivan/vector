@@ -68,12 +68,12 @@ struct my_vector
 
     value_type& front()
     {
-        return v.back();
+        return v.front();
     }
 
     value_type const& front() const
     {
-        return v.back();
+        return v.front();
     }
 
     size_t capacity() const
