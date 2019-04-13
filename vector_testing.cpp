@@ -1,187 +1,295 @@
 #include <gtest/gtest.h>
 #include "vector.h"
+#include "fault_injection.h"
 
 typedef my_vector container;
 
 TEST(correctness, default_ctor)
 {
-    container c;
-    EXPECT_EQ(0u, c.size());
-    EXPECT_TRUE(c.empty());
+    faulty_run([]
+    {
+        container c;
+        EXPECT_EQ(0u, c.size());
+        EXPECT_TRUE(c.empty());
+    });
 }
 
 TEST(correctness, push_back_simple)
 {
-    container c;
-    c.push_back(4);
-    EXPECT_FALSE(c.empty());
-    EXPECT_EQ(1u, c.size());
-    c.push_back(8);
-    EXPECT_FALSE(c.empty());
-    EXPECT_EQ(2u, c.size());
-    c.push_back(15);
-    EXPECT_FALSE(c.empty());
-    EXPECT_EQ(3u, c.size());
-    c.push_back(16);
-    EXPECT_FALSE(c.empty());
-    EXPECT_EQ(4u, c.size());
-    c.push_back(23);
-    EXPECT_FALSE(c.empty());
-    EXPECT_EQ(5u, c.size());
-    c.push_back(42);
-    EXPECT_FALSE(c.empty());
-    EXPECT_EQ(6u, c.size());
+    faulty_run([]
+    {
+        container c;
+        c.push_back(4);
+        EXPECT_FALSE(c.empty());
+        EXPECT_EQ(1u, c.size());
+        c.push_back(8);
+        EXPECT_FALSE(c.empty());
+        EXPECT_EQ(2u, c.size());
+        c.push_back(15);
+        EXPECT_FALSE(c.empty());
+        EXPECT_EQ(3u, c.size());
+        c.push_back(16);
+        EXPECT_FALSE(c.empty());
+        EXPECT_EQ(4u, c.size());
+        c.push_back(23);
+        EXPECT_FALSE(c.empty());
+        EXPECT_EQ(5u, c.size());
+        c.push_back(42);
+        EXPECT_FALSE(c.empty());
+        EXPECT_EQ(6u, c.size());
+    });
 }
 
 TEST(correctness, push_back_big)
 {
-    container c;
-    
-    for (size_t i = 0; i != 1000; ++i)
+    faulty_run([]
     {
-        int val = (i + 42) % 13;
-        c.push_back(val);
-    }
+        container c;
+        
+        for (size_t i = 0; i != 20; ++i)
+        {
+            int val = (i + 42) % 13;
+            c.push_back(val);
+        }
 
-    for (size_t i = 0; i != 1000; ++i)
-    {
-        int val = (i + 42) % 13;
-        EXPECT_EQ(val, c[i]);
-    }
+        for (size_t i = 0; i != 20; ++i)
+        {
+            int val = (i + 42) % 13;
+            EXPECT_EQ(val, c[i]);
+        }
+    });
 }
 
 TEST(correctness, pop_back)
 {
-    container c;
-    c.push_back(4);
-    c.push_back(8);
-    c.push_back(15);
-    c.push_back(16);
-    c.push_back(23);
-    c.push_back(42);
-    c.pop_back();
-    EXPECT_FALSE(c.empty());
-    EXPECT_EQ(5u, c.size());
-    c.pop_back();
-    EXPECT_FALSE(c.empty());
-    EXPECT_EQ(4u, c.size());
-    c.pop_back();
-    EXPECT_FALSE(c.empty());
-    EXPECT_EQ(3u, c.size());
-    c.pop_back();
-    EXPECT_FALSE(c.empty());
-    EXPECT_EQ(2u, c.size());
-    c.pop_back();
-    EXPECT_FALSE(c.empty());
-    EXPECT_EQ(1u, c.size());
-    c.pop_back();
-    EXPECT_TRUE(c.empty());
-    EXPECT_EQ(0u, c.size());
+    faulty_run([]
+    {
+        container c;
+        c.push_back(4);
+        c.push_back(8);
+        c.push_back(15);
+        c.push_back(16);
+        c.push_back(23);
+        c.push_back(42);
+        c.pop_back();
+        EXPECT_FALSE(c.empty());
+        EXPECT_EQ(5u, c.size());
+        c.pop_back();
+        EXPECT_FALSE(c.empty());
+        EXPECT_EQ(4u, c.size());
+        c.pop_back();
+        EXPECT_FALSE(c.empty());
+        EXPECT_EQ(3u, c.size());
+        c.pop_back();
+        EXPECT_FALSE(c.empty());
+        EXPECT_EQ(2u, c.size());
+        c.pop_back();
+        EXPECT_FALSE(c.empty());
+        EXPECT_EQ(1u, c.size());
+        c.pop_back();
+        EXPECT_TRUE(c.empty());
+        EXPECT_EQ(0u, c.size());
+    });
 }
 
 TEST(correctness, copy_ctor)
 {
-    container c;
-    c.push_back(1);
-    c.push_back(2);
-    c.push_back(3);
+    faulty_run([]
+    {
+        container c;
+        c.push_back(1);
+        c.push_back(2);
+        c.push_back(3);
 
-    container d = c;
-    d[2] = 10;
-    EXPECT_EQ(3, c[2]);
+        container d = c;
+        d[2] = 10;
+        EXPECT_EQ(3, c[2]);
 
-    d.push_back(4);
-    EXPECT_EQ(3u, c.size());
-    EXPECT_EQ(4u, d.size());
+        d.push_back(4);
+        EXPECT_EQ(3u, c.size());
+        EXPECT_EQ(4u, d.size());
+    });
+}
+
+TEST(correctness, copy_ctor_empty)
+{
+    faulty_run([]
+    {
+        container c;
+        container d = c;
+    });
+}
+
+TEST(correctness, assignment)
+{
+    faulty_run([]
+    {
+        container c;
+        c.push_back(1);
+        c.push_back(2);
+        c.push_back(3);
+
+        container d;
+        d.push_back(4);
+        d.push_back(5);
+
+        d = c;
+        EXPECT_EQ(3u, d.size());
+        EXPECT_EQ(1, d[0]);
+        EXPECT_EQ(2, d[1]);
+        EXPECT_EQ(3, d[2]);
+    });
+}
+
+TEST(correctness, assignment_empty)
+{
+    faulty_run([]
+    {
+        container c;
+        c.push_back(1);
+        c.push_back(2);
+        c.push_back(3);
+        container d;
+        d = c;
+    });
+}
+
+TEST(correctness, assignment_empty_2)
+{
+    faulty_run([]
+    {
+        container c;
+        container d;
+        d.push_back(1);
+        d.push_back(2);
+        d.push_back(3);
+        d = c;
+    });
+}
+
+TEST(correctness, assignment_self)
+{
+    faulty_run([]
+    {
+        container c;
+        c.push_back(1);
+        c.push_back(2);
+        c.push_back(3);
+        c = c;
+    });
+}
+
+TEST(correctness, assignment_self_empty)
+{
+    faulty_run([]
+    {
+        container c;
+        c = c;
+    });
 }
 
 TEST(correctness, subscript)
 {
-    container c;
-    c.push_back(4);
-    c.push_back(8);
-    c.push_back(15);
-    c.push_back(16);
-    c.push_back(23);
-    c.push_back(42);
-    
-    EXPECT_EQ(4, c[0]);
-    EXPECT_EQ(8, c[1]);
-    EXPECT_EQ(15, c[2]);
-    EXPECT_EQ(16, c[3]);
-    EXPECT_EQ(23, c[4]);
-    EXPECT_EQ(42, c[5]);
+    faulty_run([]
+    {
+        container c;
+        c.push_back(4);
+        c.push_back(8);
+        c.push_back(15);
+        c.push_back(16);
+        c.push_back(23);
+        c.push_back(42);
+        
+        EXPECT_EQ(4, c[0]);
+        EXPECT_EQ(8, c[1]);
+        EXPECT_EQ(15, c[2]);
+        EXPECT_EQ(16, c[3]);
+        EXPECT_EQ(23, c[4]);
+        EXPECT_EQ(42, c[5]);
+    });
 }
 
 TEST(correctness, insert)
 {
-    container c;
-    c.insert(0, 15);
-    c.insert(1, 42);
-    c.insert(1, 16);
-    c.insert(2, 23);
-    c.insert(0, 4);
-    c.insert(1, 8);
+    faulty_run([]
+    {
+        container c;
+        c.insert(0, 15);
+        c.insert(1, 42);
+        c.insert(1, 16);
+        c.insert(2, 23);
+        c.insert(0, 4);
+        c.insert(1, 8);
 
-    EXPECT_EQ(6u, c.size());
-    EXPECT_EQ(4, c[0]);
-    EXPECT_EQ(8, c[1]);
-    EXPECT_EQ(15, c[2]);
-    EXPECT_EQ(16, c[3]);
-    EXPECT_EQ(23, c[4]);
-    EXPECT_EQ(42, c[5]);
+        EXPECT_EQ(6u, c.size());
+        EXPECT_EQ(4, c[0]);
+        EXPECT_EQ(8, c[1]);
+        EXPECT_EQ(15, c[2]);
+        EXPECT_EQ(16, c[3]);
+        EXPECT_EQ(23, c[4]);
+        EXPECT_EQ(42, c[5]);
+    });
 }
 
 TEST(correctness, erase)
 {
-    container c;
-    c.push_back(4);
-    c.push_back(8);
-    c.push_back(15);
-    c.push_back(16);
-    c.push_back(23);
-    c.push_back(42);
+    faulty_run([]
+    {
+        container c;
+        c.push_back(4);
+        c.push_back(8);
+        c.push_back(15);
+        c.push_back(16);
+        c.push_back(23);
+        c.push_back(42);
 
-    c.erase(2);
-    EXPECT_EQ(4, c[0]);
-    EXPECT_EQ(8, c[1]);
-    EXPECT_EQ(16, c[2]);
-    EXPECT_EQ(23, c[3]);
-    EXPECT_EQ(42, c[4]);
+        c.erase(2);
+        EXPECT_EQ(4, c[0]);
+        EXPECT_EQ(8, c[1]);
+        EXPECT_EQ(16, c[2]);
+        EXPECT_EQ(23, c[3]);
+        EXPECT_EQ(42, c[4]);
+    });
 }
 
 TEST(correctness, erase_begin)
 {
-    container c;
-    c.push_back(4);
-    c.push_back(8);
-    c.push_back(15);
-    c.push_back(16);
-    c.push_back(23);
-    c.push_back(42);
+    faulty_run([]
+    {
+        container c;
+        c.push_back(4);
+        c.push_back(8);
+        c.push_back(15);
+        c.push_back(16);
+        c.push_back(23);
+        c.push_back(42);
 
-    c.erase(0);
-    EXPECT_EQ(8, c[0]);
-    EXPECT_EQ(15, c[1]);
-    EXPECT_EQ(16, c[2]);
-    EXPECT_EQ(23, c[3]);
-    EXPECT_EQ(42, c[4]);
+        c.erase(0);
+        EXPECT_EQ(8, c[0]);
+        EXPECT_EQ(15, c[1]);
+        EXPECT_EQ(16, c[2]);
+        EXPECT_EQ(23, c[3]);
+        EXPECT_EQ(42, c[4]);
+    });
 }
 
 TEST(correctness, erase_end)
 {
-    container c;
-    c.push_back(4);
-    c.push_back(8);
-    c.push_back(15);
-    c.push_back(16);
-    c.push_back(23);
-    c.push_back(42);
+    faulty_run([]
+    {
+        container c;
+        c.push_back(4);
+        c.push_back(8);
+        c.push_back(15);
+        c.push_back(16);
+        c.push_back(23);
+        c.push_back(42);
 
-    c.erase(5);
-    EXPECT_EQ(4, c[0]);
-    EXPECT_EQ(8, c[1]);
-    EXPECT_EQ(15, c[2]);
-    EXPECT_EQ(16, c[3]);
-    EXPECT_EQ(23, c[4]);
+        c.erase(5);
+        EXPECT_EQ(4, c[0]);
+        EXPECT_EQ(8, c[1]);
+        EXPECT_EQ(15, c[2]);
+        EXPECT_EQ(16, c[3]);
+        EXPECT_EQ(23, c[4]);
+    });
 }

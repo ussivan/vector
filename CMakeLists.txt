@@ -9,6 +9,8 @@ add_executable(vector_testing
                vector.h
                counted.h
                counted.cpp
+               fault_injection.h
+               fault_injection.cpp
                gtest/gtest-all.cc
                gtest/gtest.h
                gtest/gtest_main.cc)

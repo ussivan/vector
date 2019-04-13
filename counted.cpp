@@ -1,9 +1,12 @@
 #include "counted.h"
 #include <gtest/gtest.h>
 
+#include "fault_injection.h"
+
 counted::counted(int data)
     : data(data)
 {
+    fault_injection_point();
     auto p = instances.insert(this);
     EXPECT_TRUE(p.second);
 }
@@ -11,6 +14,7 @@ counted::counted(int data)
 counted::counted(counted const& other)
     : data(other.data)
 {
+    fault_injection_point();
     auto p = instances.insert(this);
     EXPECT_TRUE(p.second);
 }
@@ -23,6 +27,7 @@ counted::~counted()
 
 counted& counted::operator=(counted const& c)
 {
+    fault_injection_point();
     EXPECT_TRUE(instances.find(this) != instances.end());
 
     data = c.data;
