@@ -415,24 +415,30 @@ TEST(correctness, reserve_2)
 
 TEST(correctness, front_back)
 {
-    container c;
-    c.push_back(1);
-    c.push_back(2);
-    c.push_back(3);
-    EXPECT_EQ(1, c.front());
-    EXPECT_EQ(3, c.back());
+    faulty_run([]
+    {
+        container c;
+        c.push_back(1);
+        c.push_back(2);
+        c.push_back(3);
+        EXPECT_EQ(1, c.front());
+        EXPECT_EQ(3, c.back());
+    });
 }
 
 TEST(correctness, front_back_ref)
 {
-    container c;
-    c.push_back(1);
-    c.push_back(2);
-    c.push_back(3);
-    EXPECT_EQ(&c.front(), &c[0]);
-    EXPECT_EQ(&c.back(), &c[2]);
-    c.front() = 10;
-    c.back() = 20;
-    EXPECT_EQ(10, c[0]);
-    EXPECT_EQ(20, c[2]);
+    faulty_run([]
+    {
+        container c;
+        c.push_back(1);
+        c.push_back(2);
+        c.push_back(3);
+        EXPECT_EQ(&c.front(), &c[0]);
+        EXPECT_EQ(&c.back(), &c[2]);
+        c.front() = 10;
+        c.back() = 20;
+        EXPECT_EQ(10, c[0]);
+        EXPECT_EQ(20, c[2]);
+    });
 }
