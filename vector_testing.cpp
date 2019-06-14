@@ -1,8 +1,8 @@
 #include <gtest/gtest.h>
-#include "vector.h"
 #include "fault_injection.h"
+#include "counted.h"
 
-typedef my_vector container;
+typedef std::vector<counted> container;
 
 TEST(correctness, default_ctor)
 {
@@ -214,12 +214,12 @@ TEST(correctness, insert)
     faulty_run([]
     {
         container c;
-        c.insert(0, 15);
-        c.insert(1, 42);
-        c.insert(1, 16);
-        c.insert(2, 23);
-        c.insert(0, 4);
-        c.insert(1, 8);
+        c.insert(c.begin(), 15);
+        c.insert(c.begin() + 1, 42);
+        c.insert(c.begin() + 1, 16);
+        c.insert(c.begin() + 2, 23);
+        c.insert(c.begin(), 4);
+        c.insert(c.begin() + 1, 8);
 
         EXPECT_EQ(6u, c.size());
         EXPECT_EQ(4, c[0]);
@@ -243,7 +243,7 @@ TEST(correctness, erase)
         c.push_back(23);
         c.push_back(42);
 
-        c.erase(2);
+        c.erase(c.begin() + 2);
         EXPECT_EQ(4, c[0]);
         EXPECT_EQ(8, c[1]);
         EXPECT_EQ(16, c[2]);
@@ -264,7 +264,7 @@ TEST(correctness, erase_begin)
         c.push_back(23);
         c.push_back(42);
 
-        c.erase(0);
+        c.erase(c.begin());
         EXPECT_EQ(8, c[0]);
         EXPECT_EQ(15, c[1]);
         EXPECT_EQ(16, c[2]);
@@ -285,7 +285,7 @@ TEST(correctness, erase_end)
         c.push_back(23);
         c.push_back(42);
 
-        c.erase(5);
+        c.erase(c.end() - 1);
         EXPECT_EQ(4, c[0]);
         EXPECT_EQ(8, c[1]);
         EXPECT_EQ(15, c[2]);
@@ -306,7 +306,7 @@ TEST(correctness, erase_range_begin)
         c.push_back(23);
         c.push_back(42);
 
-        c.erase(0, 2);
+        c.erase(c.begin(), c.begin() + 2);
         EXPECT_EQ(15, c[0]);
         EXPECT_EQ(16, c[1]);
         EXPECT_EQ(23, c[2]);
@@ -326,7 +326,7 @@ TEST(correctness, erase_range_middle)
         c.push_back(23);
         c.push_back(42);
 
-        c.erase(2, 5);
+        c.erase(c.begin() + 2, c.end() - 1);
         EXPECT_EQ(4, c[0]);
         EXPECT_EQ(8, c[1]);
         EXPECT_EQ(42, c[2]);
@@ -345,7 +345,7 @@ TEST(correctness, erase_range_end)
         c.push_back(23);
         c.push_back(42);
 
-        c.erase(3, 6);
+        c.erase(c.begin() + 3, c.end());
         EXPECT_EQ(4, c[0]);
         EXPECT_EQ(8, c[1]);
         EXPECT_EQ(15, c[2]);
@@ -364,7 +364,7 @@ TEST(correctness, erase_range_all)
         c.push_back(23);
         c.push_back(42);
 
-        c.erase(0, 6);
+        c.erase(c.begin(), c.end());
         EXPECT_TRUE(c.empty());
     });
 }

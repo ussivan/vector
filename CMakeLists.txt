@@ -6,7 +6,6 @@ include_directories(${BIGINT_SOURCE_DIR})
 
 add_executable(vector_testing
                vector_testing.cpp
-               vector.h
                counted.h
                counted.cpp
                fault_injection.h
