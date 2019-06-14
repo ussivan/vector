@@ -96,6 +96,9 @@ void fault_injection_point()
 
 void faulty_run(std::function<void ()> const& f)
 {
+#if 1
+    f();
+#else
     assert(!context);
     fault_injection_context ctx;
     context = &ctx;
@@ -121,6 +124,7 @@ void faulty_run(std::function<void ()> const& f)
         break;
     }
     context = nullptr;
+#endif
 }
 
 fault_injection_disable::fault_injection_disable()
