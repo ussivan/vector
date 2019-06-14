@@ -3,8 +3,16 @@
 
 #include "fault_injection.h"
 
+namespace
+{
+    int transcode(int data, void const* ptr)
+    {
+        return data ^ static_cast<int>(reinterpret_cast<std::ptrdiff_t>(ptr) / sizeof(counted));
+    }
+}
+
 counted::counted(int data)
-    : data(data)
+    : data(transcode(data, this))
 {
     fault_injection_point();
     fault_injection_disable fd;
@@ -13,7 +21,7 @@ counted::counted(int data)
 }
 
 counted::counted(counted const& other)
-    : data(other.data)
+    : data(transcode(transcode(other.data, &other), this))
 {
     fault_injection_point();
     fault_injection_disable fd;
@@ -36,7 +44,7 @@ counted& counted::operator=(counted const& c)
         EXPECT_TRUE(instances.find(this) != instances.end());
     }
 
-    data = c.data;
+    data = transcode(transcode(c.data, &c), this);
     return *this;
 }
 
@@ -45,7 +53,7 @@ counted::operator int() const
     fault_injection_disable fd;
     EXPECT_TRUE(instances.find(this) != instances.end());
 
-    return data;
+    return transcode(data, this);
 }
 
 std::set<counted const*> counted::instances;
