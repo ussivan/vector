@@ -442,3 +442,36 @@ TEST(correctness, front_back_ref)
         EXPECT_EQ(20, c[2]);
     });
 }
+
+TEST(correctness, push_element_of_itself)
+{
+    faulty_run([]
+    {
+        container c;
+        c.push_back(0);
+        c.push_back(1);
+        
+        for (size_t i = 0; i != 20; ++i)
+            c.push_back(*(c.end() - 2));
+
+        for (size_t i = 0; i != 22; ++i)
+            EXPECT_EQ((int)i % 2, c[i]);
+    });
+}
+
+
+TEST(correctness, push_element_of_itself_single)
+{
+    faulty_run([]
+    {
+        container c;
+        c.push_back(42);
+        c.push_back(c.front());
+        c.push_back(c.front());
+        c.push_back(c.front());
+        c.push_back(c.front());
+        
+        for (size_t i = 0; i != c.size(); ++i)
+            EXPECT_EQ(42, c[i]);
+    });
+}
