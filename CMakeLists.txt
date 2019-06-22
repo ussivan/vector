@@ -1,8 +1,10 @@
 cmake_minimum_required(VERSION 2.8)
 
 project(BIGINT)
-
+set(CMAKE_CXX_STANDARD 17)
 include_directories(${BIGINT_SOURCE_DIR})
+
+add_executable(main main.cpp vector.h)
 
 add_executable(vector_testing
                vector_testing.cpp
@@ -12,7 +14,7 @@ add_executable(vector_testing
                fault_injection.cpp
                gtest/gtest-all.cc
                gtest/gtest.h
-               gtest/gtest_main.cc)
+               gtest/gtest_main.cc vector.h main.cpp)
 
 if(CMAKE_COMPILER_IS_GNUCC OR CMAKE_COMPILER_IS_GNUCXX)
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -std=c++11 -pedantic")
