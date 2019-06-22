@@ -31,6 +31,19 @@ struct vector {
         return *this;
     }
 
+    template <typename Iterator>
+    vector(Iterator first, Iterator last) : buf(nullptr), small(false) {
+        while (first != last) {
+            push_back(*first);
+            first++;
+        }
+    }
+    template <typename Iterator>
+    void assign(Iterator first, Iterator last) {
+        vector v(first, last);
+        *this = v;
+    }
+
     ~vector();
 
     T &operator[](size_t index);
@@ -260,13 +273,13 @@ private:
             return;
         }
         auto *newBuf = reinterpret_cast<size_t*>(operator new [](3 * sizeof(size_t) + n * sizeof(T)));
-        newBuf[SIZE_I] = sz;
+        newBuf[SIZE_I] = std::min(sz, n);
         newBuf[CAP_I] = n;
         newBuf[REFS_I] = 1;
         T* t = reinterpret_cast<T*> (newBuf + 3);
-        size_t i;
+        size_t i = 0;
         try {
-            for (size_t i = 0; i < sz; i++) {
+            for (i = 0; i < std::min(sz, n); i++) {
                 new(t + i) T((*this)[i]);
             }
         } catch (...) {
@@ -404,10 +417,19 @@ void vector<T>::reserve(size_t n) {
 
 template<typename T>
 void vector<T>::resize(size_t n, const T &val) {
-    expand(n);
-    while(size() < n) {
-
+    if(n <= size()) {
+        expand(n);
+        return;
     }
+    vector copy;
+    copy.reserve(n);
+    for(size_t i = 0; i < size(); i++) {
+        copy.push_back((*this)[i]);
+    }
+    while(copy.size() < n) {
+        copy.push_back(val);
+    }
+    *this = copy;
 }
 
 template<typename T>
