@@ -1,9 +1,10 @@
 #include <gtest/gtest.h>
 #include "fault_injection.h"
 #include "counted.h"
+#include "vector.h"
 
-typedef std::vector<counted> container;
-typedef std::vector<int> container_int;
+typedef vector<counted> container;
+typedef vector<int> container_int;
 
 TEST(correctness, default_ctor)
 {

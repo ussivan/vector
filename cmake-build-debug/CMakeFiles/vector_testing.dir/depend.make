@@ -21,5 +21,6 @@ CMakeFiles/vector_testing.dir/main.cpp.o: ../vector.h
 CMakeFiles/vector_testing.dir/vector_testing.cpp.o: ../gtest/gtest.h
 CMakeFiles/vector_testing.dir/vector_testing.cpp.o: ../counted.h
 CMakeFiles/vector_testing.dir/vector_testing.cpp.o: ../fault_injection.h
+CMakeFiles/vector_testing.dir/vector_testing.cpp.o: ../vector.h
 CMakeFiles/vector_testing.dir/vector_testing.cpp.o: ../vector_testing.cpp
 

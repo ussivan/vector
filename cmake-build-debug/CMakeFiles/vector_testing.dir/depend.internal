@@ -22,4 +22,5 @@ CMakeFiles/vector_testing.dir/vector_testing.cpp.o
  ..//gtest/gtest.h
  /home/shirogiro/CLionProjects/counted/counted.h
  /home/shirogiro/CLionProjects/counted/fault_injection.h
+ /home/shirogiro/CLionProjects/counted/vector.h
  /home/shirogiro/CLionProjects/counted/vector_testing.cpp

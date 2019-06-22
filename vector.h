@@ -6,6 +6,8 @@ template<typename T>
 struct vector {
     typedef T* iterator;
     typedef const T* const_iterator;
+    typedef std::reverse_iterator<T*> reverse_iterator;
+    typedef std::reverse_iterator<const T*> const_reverse_iterator;
 
     vector() noexcept;
 
@@ -47,6 +49,14 @@ struct vector {
 
     void pop_back();
 
+    T* data() {
+        return begin();
+    }
+
+    const T* data() const noexcept{
+        return begin();
+    }
+
     iterator begin() noexcept {
         copy();
         if(small) {
@@ -79,16 +89,30 @@ struct vector {
     };
 
     const_iterator end() const noexcept {
-        return const_iterator (end());
+        if(small) {
+            return const_iterator (&val + 1);
+        }
+        if(buf == nullptr) {
+            return nullptr;
+        }
+        return const_iterator (reinterpret_cast<T*>(buf + 3) + size());
     };
 
-    std::reverse_iterator<T*> rbegin() {
+    std::reverse_iterator<T*> rbegin() noexcept {
         return std::reverse_iterator<T*>(end());
     }
 
-    std::reverse_iterator<T*> rend() {
+    std::reverse_iterator<T*> rend() noexcept {
         return std::reverse_iterator<T*>(begin())   ;
     }
+
+    std::reverse_iterator<const T*> rbegin() const noexcept {
+        return std::reverse_iterator<const T*>(end());
+    };
+
+    std::reverse_iterator<const T*> rend() const noexcept {
+        return std::reverse_iterator<const T*>(begin());
+    };
 
     bool empty() const noexcept;
 
@@ -189,65 +213,21 @@ struct vector {
         }
         return begin() + i;
     }
+
     template <typename P>
-    friend bool operator <(vector<P> const &a, vector<P> const &b) noexcept {
-        for(size_t i = 0; i < std::min(a.size(), b.size()); i++) {
-            if(a[i] != b[i]) {
-                return a[i] < b[i];
-            }
-        }
-        return a.size() < b.size();
-    }
+    friend bool operator<(vector<P> const &a, vector<P> const &b) noexcept;
     template <typename P>
-    friend bool operator >(vector<P> const &a, vector<P> const &b) noexcept{
-        return b < a;
-    }
+    friend bool operator>(vector<P> const &a, vector<P> const &b) noexcept;
     template <typename P>
-    friend bool operator <=(vector<P> const &a, vector<P> const &b) noexcept{
-        return !(a > b);
-    }
+    friend bool operator<=(vector<P> const &a, vector<P> const &b) noexcept;
     template <typename P>
-    friend bool operator >=(vector<P> const &a, vector<P> const &b) noexcept{
-        return !(a < b);
-    }
+    friend bool operator>=(vector<P> const &a, vector<P> const &b) noexcept;
     template <typename P>
-    friend void swap(vector<P> const &a, vector<P> const &b) {
-        if(a.small && b.small) {
-            std::swap(a.val, b.val);
-            return;
-        }
-        if(a.small) {
-            vector<P> t(b);
-            b.deleteAll();
-            try {
-                new(&b.val) P(a.val);
-            } catch (...) {
-                b.buf = t.buf;
-                throw;
-            }
-            b.small = true;
-            a.small = false;
-            a.val.~P();
-            a.buf = t.buf;
-            return;
-        }
-        if(b.small) {
-            vector<P> t(a);
-            a.deleteAll();
-            try {
-                new(&a.val) P(b.val);
-            } catch (...) {
-                a.buf = t.buf;
-                throw;
-            }
-            a.small = true;
-            b.small = false;
-            b.val.~P();
-            b.buf = t.buf;
-            return;
-        }
-        std::swap(a.buf, b.buf);
-    }
+    friend bool operator==(vector<P> const &a, vector<P> const &b) noexcept;
+    template <typename P>
+    friend bool operator!=(vector<P> const &a, vector<P> const &b) noexcept;
+    template <typename P>
+    friend void swap(vector<P> &a, vector<P> &b);
 
 private:
     static size_t const SIZE_I = 0;
@@ -519,4 +499,77 @@ void vector<T>::copy() {
         throw;
     }
     buf = newBuf;
+}
+
+template<typename P>
+bool operator<(const vector<P> &a, const vector<P> &b) noexcept {
+    for(size_t i = 0; i < std::min(a.size(), b.size()); i++) {
+        if(a[i] != b[i]) {
+            return a[i] < b[i];
+        }
+    }
+    return a.size() < b.size();
+}
+
+template<typename P>
+bool operator>(vector<P> const &a, vector<P> const &b) noexcept {
+    return b < a;
+}
+
+template<typename P>
+bool operator<=(vector<P> const &a, vector<P> const &b) noexcept {
+    return !(a > b);
+}
+
+template<typename P>
+bool operator>=(vector<P> const &a, vector<P> const &b) noexcept {
+    return !(a < b);
+}
+
+template<typename P>
+bool operator==(vector<P> const &a, vector<P> const &b) noexcept {
+    return !((a < b) || (a > b));
+}
+
+template<typename P>
+bool operator!=(vector<P> const &a, vector<P> const &b) noexcept {
+    return !(a == b);
+}
+
+template<typename P>
+void swap(vector<P> &a, vector<P> &b) {
+    if(a.small && b.small) {
+        std::swap(a.val, b.val);
+        return;
+    }
+    if(a.small) {
+        vector<P> t(b);
+        try {
+            new(&b.val) P(a.val);
+        } catch (...) {
+            b.buf = t.buf;
+            throw;
+        }
+        b.small = true;
+        a.small = false;
+        a.val.~P();
+        a.buf = t.buf;
+        return;
+    }
+    if(b.small) {
+        vector<P> t(a);
+        a.deleteAll();
+        try {
+            new(&a.val) P(b.val);
+        } catch (...) {
+            a.buf = t.buf;
+            throw;
+        }
+        a.small = true;
+        b.small = false;
+        b.val.~P();
+        b.buf = t.buf;
+        return;
+    }
+    std::swap(a.buf, b.buf);
 }
